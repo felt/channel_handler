@@ -229,7 +229,7 @@ defmodule ChannelHandler.Extension do
 
   def perform_handle(event, prefix, payload, socket, handle, plugs) do
     context = ChannelHandler.Extension.build_context(full_event: event, event: event)
-    telemetry_meta = %{event: event, prefix: prefix}
+    telemetry_meta = %{event: event, prefix: prefix, socket: socket}
 
     :telemetry.span([:channel_handler, :handle], telemetry_meta, fn ->
       result =
