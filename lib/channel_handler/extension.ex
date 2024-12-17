@@ -160,28 +160,35 @@ defmodule ChannelHandler.Extension do
       |> Keyword.get_values(:plugs)
       |> List.flatten()
 
-    with {:cont, socket, payload, context} <-
-           ChannelHandler.Extension.process_plugs(
-             plugs ++ module_plugs,
-             socket,
-             payload,
-             context
-           ) do
-      if prefix do
-        apply(event.module, event.function, [
-          event_name,
-          payload,
-          context,
-          socket
-        ])
-      else
-        apply(event.module, event.function, [
-          payload,
-          context,
-          socket
-        ])
-      end
-    end
+    telemetry_meta = %{event: event_name, prefix: prefix, socket: socket}
+
+    :telemetry.span([:channel_handler, :event], telemetry_meta, fn ->
+      result =
+        with {:cont, socket, payload, context} <-
+               ChannelHandler.Extension.process_plugs(
+                 plugs ++ module_plugs,
+                 socket,
+                 payload,
+                 context
+               ) do
+          if prefix do
+            apply(event.module, event.function, [
+              event_name,
+              payload,
+              context,
+              socket
+            ])
+          else
+            apply(event.module, event.function, [
+              payload,
+              context,
+              socket
+            ])
+          end
+        end
+
+      {result, telemetry_meta}
+    end)
   end
 
   defmacro build_handle(handle, plugs) do
