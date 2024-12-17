@@ -192,9 +192,12 @@ defmodule ChannelHandler.RouterTest do
       end
     end
 
-    :telemetry.attach(
+    :telemetry.attach_many(
       :test,
-      [:channel_handler, :handle, :stop],
+      [
+        [:channel_handler, :handle, :stop],
+        [:channel_handler, :event, :stop]
+      ],
       &__MODULE__.assert_telemetry/4,
       %{}
     )
