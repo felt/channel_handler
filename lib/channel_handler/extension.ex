@@ -160,7 +160,7 @@ defmodule ChannelHandler.Extension do
       |> Keyword.get_values(:plugs)
       |> List.flatten()
 
-    telemetry_meta = %{event: event_name, prefix: prefix, socket: socket}
+    telemetry_meta = %{event: event_name, prefix: prefix, socket: socket, payload: payload}
 
     :telemetry.span([:channel_handler, :event], telemetry_meta, fn ->
       result =
@@ -187,7 +187,7 @@ defmodule ChannelHandler.Extension do
           end
         end
 
-      {result, telemetry_meta}
+      {result, Map.put(telemetry_meta, :result, result)}
     end)
   end
 
@@ -236,7 +236,7 @@ defmodule ChannelHandler.Extension do
 
   def perform_handle(event, prefix, payload, socket, handle, plugs) do
     context = ChannelHandler.Extension.build_context(full_event: event, event: event)
-    telemetry_meta = %{event: event, prefix: prefix, socket: socket}
+    telemetry_meta = %{event: event, prefix: prefix, socket: socket, payload: payload}
 
     :telemetry.span([:channel_handler, :handle], telemetry_meta, fn ->
       result =
@@ -249,7 +249,7 @@ defmodule ChannelHandler.Extension do
           end
         end
 
-      {result, telemetry_meta}
+      {result, Map.put(telemetry_meta, :result, result)}
     end)
   end
 
